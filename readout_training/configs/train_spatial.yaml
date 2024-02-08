@@ -1,0 +1,56 @@
+# coding=utf-8
+# Copyright 2024 The Google Research Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# ================ Base Model ========================
+# SDXL: stabilityai/stable-diffusion-xl-base-1.0
+# SDv1-5: runwayml/stable-diffusion-v1-5
+# ====================================================
+model_id: stabilityai/stable-diffusion-xl-base-1.0
+# Diffusion hparams
+diffusion_mode: generation
+num_timesteps: 1000
+save_timestep: [0]
+prompt: ""
+negative_prompt: ""
+guidance_scale: -1
+# Aggregation hparams
+projection_dim: 384
+aggregation_kwargs:
+  use_output_head: True
+  output_head_channels: 3
+  bottleneck_sequential: False
+# Training hparams
+weight_decay: 0
+max_steps: 5000
+val_every_n_steps: 1000
+log_max: 10
+lr: 1e-3
+# Dataloading
+batch_size: 8
+train_file:
+  - annotations/PascalVOC_train.json
+val_file:
+  - annotations/PascalVOC_val.json
+dataset_args:
+  bucket_root: data
+  control_root: pseudo_labels/PascalVOC/openpose
+  image_root: raw/PascalVOC/VOC2012/JPEGImages
+  control_type: pose # [pose, depth, edge]
+# Logging
+wandb_kwargs:
+  entity: gcluo
+  project: readout_training
+  name: readout_sdxl_spatial_pose
+results_folder: runs

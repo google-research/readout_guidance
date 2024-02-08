@@ -1,0 +1,9 @@
+**__pycache__**
+**experimental**
+**weights**
+**out**
+**results**
+**wandb**
+readout_training/data/deps
+readout_training/data/pseudo_labels
+readout_training/data/raw
