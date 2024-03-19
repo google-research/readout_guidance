@@ -51,10 +51,10 @@ To train your own readout heads, please check out `readout_training/README.md`.
 
 ## Citing
 ```
-@article{luo2023readoutguidance,
+@inproceedings{luo2024readoutguidance,
     title={Readout Guidance: Learning Control from Diffusion Features},
     author={Grace Luo and Trevor Darrell and Oliver Wang and Dan B Goldman and Aleksander Holynski},
-    journal={arXiv preprint arXiv:2312.02150},
-    year={2023}
+    journal={CVPR},
+    year={2024}
 }
 ```
