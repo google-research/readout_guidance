@@ -13,16 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-deps_root=data/deps
-
-mkdir ${deps_root}
-
-# Clone ControlNet and create `control` conda env
-git clone https://github.com/lllyasviel/ControlNet ${deps_root}/ControlNet
-conda env create -f ${deps_root}/ControlNet/environment.yaml
-
-# CoTracker is already included via torch
-# and is compatable with the `readout` conda env
-
-# SDEdit is already included via diffusers
-# and is compatable with the `readout` conda env
+read_root: data/raw/MSCOCO/images/val2017/*
+filter_file: annotations/MSCOCO-val2017_demo.json
+aggregation_ckpt: weights/readout_sdv1-5_pose_keypoint.pt
+save_root: data/pseudo_labels/MSCOCO/readout_pose_keypoint
+batch_size: 5
+res: 512

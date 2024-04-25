@@ -32,9 +32,13 @@ from dhf.aggregation_network import AggregationNetwork
 # ====================
 #   Load Components
 # ====================
-def load_models(config_path, device=None):
-    config = OmegaConf.load(config_path)
-    config = OmegaConf.to_container(config, resolve=True)
+def load_models(config_path=None, device=None, ckpt_path=None):
+    if ckpt_path is None:
+        config = OmegaConf.load(config_path)
+        config = OmegaConf.to_container(config, resolve=True)
+    else:
+        state_dict = torch.load(ckpt_path)
+        config = state_dict["config"]
     if device is None:
         device = config.get("device", "cuda")
     diffusion_extractor = DiffusionExtractor(config, device)
@@ -46,6 +50,8 @@ def load_models(config_path, device=None):
         num_timesteps=config["num_timesteps"],
         **config.get("aggregation_kwargs", {})
     )
+    if ckpt_path is not None:
+        aggregation_network.load_state_dict(state_dict["aggregation_network"], strict=False)
     config["output_resolution"] = diffusion_extractor.output_resolution
     config["load_resolution"] = diffusion_extractor.load_resolution
     return config, diffusion_extractor, aggregation_network
@@ -136,14 +142,21 @@ def renormalize(x, range_a, range_b):
     min_b, max_b = range_b
     return ((x - min_a) / (max_a - min_a)) * (max_b - min_b) + min_b
 
-def log_grid(imgs, target, pred, control_range):
-    imgs = imgs.detach().cpu()
-    target = target.detach().cpu()
-    pred = pred.detach().cpu()
-    imgs = renormalize(imgs, (-1, 1), (0, 1))
-    target = renormalize(target, control_range, (0, 1))
-    pred = renormalize(pred, control_range, (0, 1))
-    grid = torch.cat([imgs, target, pred], dim=0)
+def log_grid(imgs=None, target=None, pred=None, control_range=None):
+    grid = []
+    if imgs is not None:
+        imgs = imgs.detach().cpu()
+        imgs = renormalize(imgs, (-1, 1), (0, 1))
+        grid.append(imgs)
+    if target is not None:
+        target = target.detach().cpu()
+        target = renormalize(target, control_range, (0, 1))
+        grid.append(target)
+    if pred is not None:
+        pred = pred.detach().cpu()
+        pred = renormalize(pred, control_range, (0, 1))
+        grid.append(pred)
+    grid = torch.cat(grid, dim=0)
     # Clamp to prevent overflow / underflow
     grid = torch.clamp(grid, 0, 1)
     grid = make_grid(grid, imgs.shape[0])

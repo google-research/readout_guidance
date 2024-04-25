@@ -8,6 +8,7 @@ This repository contains the PyTorch implementation of Readout Guidance: Learnin
 [[`Project Page`](https://readout-guidance.github.io)][[`arXiv`](https://arxiv.org/abs/2312.02150)]
 
 ## Releases
+- 🚀 2024/04/26: Additional code for pose estimation with readout heads in the [readout_pose](readout_pose) directory.
 - 🚀 2024/01/31: Initial codebase release with demos for drag-based manipulation and spatial control, as well as readout head training code. Includes weights for SDXL and SDv1-5 readout heads for appearance, correspondence, depth, edge, pose.
 
 ## Setup

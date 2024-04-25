@@ -151,6 +151,7 @@ class AggregationNetwork(nn.Module):
             num_timesteps=None,
             use_output_head=False,
             output_head_channels=3,
+            output_head_act=True,
             bottleneck_sequential=True
         ):
         super().__init__()
@@ -191,14 +192,19 @@ class AggregationNetwork(nn.Module):
             images these are more rare
             """
             print(f"Using output head with {output_head_channels} channels")
-            self.output_head = nn.Sequential(
+            output_head = []
+            output_head.extend([
                 nn.Conv2d(projection_dim, 128, kernel_size=3, stride=1, padding=1),
                 nn.SiLU(True),
                 nn.Conv2d(128, 32, kernel_size=3, stride=1, padding=1),
                 nn.SiLU(True),
                 nn.Conv2d(32, output_head_channels, kernel_size=1, stride=1, padding=0),
-                nn.Tanh()
-            )
+            ])
+            if output_head_act:
+                output_head.append(
+                    nn.Tanh()
+                )
+            self.output_head = nn.Sequential(*output_head)
             self.output_head = self.output_head.to(device)
         else:
             print("Not using output head")
