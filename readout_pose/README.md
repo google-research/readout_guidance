@@ -1,8 +1,8 @@
 # Readout Head for Pose Estimation
 
-For our original pose head, we represent the outputs as RGB images. Instead of directly predicting keypoints, the head predicts a *visualization* of the skeleton. While this setup is useful for quickly training readout heads for guidance, one might be curious about its performance on the actual discriminative task.
+The pose head described in our paper represented the outputs as RGB images: Instead of directly predicting keypoints, the head predicts a *visualization* of the skeleton. Although this approach is useful for quickly training readout heads for guidance, it's not useful for the actual task of pose estimation.
 
-Here, we train a **new pose keypoint head** to answer the question: **how good are readout heads, or frozen diffusion features combined with small network on top, at pose estimation?** We find that this readout head on top of SDv1-5 outperforms ControlNet's default OpenPose annotator, while SDXL is on par with its performance.
+Here, we train **new pose keypoint heads** to answer the following question: **How good are readout heads at pose estimation?** We find that this readout head for SDXL performs similarly to ControlNet's default OpenPose annotator, while the readout head for SDv1-5 actually outperforms it.
 
 ## Approach
 Here, we outline the design of the pose keypoint head.
@@ -11,7 +11,7 @@ Here, we outline the design of the pose keypoint head.
 We train on MSCOCO images and their ground-truth human-annotated keypoints. To ensure that the input contains a single person, we crop the image to the ground-truth bounding box corresponding to the ground-truth keypoints. At inference time, the head can operate on full images with a single person, or an image cropped to the person using an off-the-shelf person detector, similar to ViTPose [3].
 
 #### 2. Output Format
-We parameterize the readout head to predict `k` heatmaps, where `k` is the number of keypoints. We use `k=18`, or first 18 keypoints in the the [OpenPose Body_25 format](https://cmu-perceptual-computing-lab.github.io/openpose/web/html/doc/md_doc_02_output.html#pose-output-format-body_25), the same format used for our original RGB pose head.
+We parameterize the readout head to predict `k` heatmaps, where `k` is the number of keypoints. We use `k=18`, corresponding to the first 18 keypoints in the the [OpenPose Body_25 format](https://cmu-perceptual-computing-lab.github.io/openpose/web/html/doc/md_doc_02_output.html#pose-output-format-body_25), the same format used for our original RGB pose head.
 
 During training, we follow the same setup as HRNet [1]. We create the ground-truth heatmaps by applying a 2D Gaussian centered at the ground-truth keypoint location with a standard deviation that is `1/16` the size of the heatmap. For example, for a heatmap of size `64x64` we use a Gaussian with standard deviation `4`. We train with a MSE loss between the predicted and ground-truth heatmap.
 
