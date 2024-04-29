@@ -55,5 +55,5 @@ dataset_args:
 wandb_kwargs:
   entity: gcluo
   project: readout_training
-  name: readout_sdv1-5_pose_keypoint
+  name: readout_sdv15_pose_keypoint
 results_folder: runs

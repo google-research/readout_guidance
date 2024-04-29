@@ -134,6 +134,41 @@ def heatmap_to_meta(heatmap, size, latent_size, num_keypoints=18, thresh=0.1, lo
         batch_subset.append(subset)
     return batch_candidate, batch_subset
 
+def re_center_scale(meta, bbox, size):
+    candidate = np.array(meta["candidate"])
+    new_candidate = rg_operators.rescale_points(candidate[:, :2], size, bbox[2:])
+    new_candidate += bbox[:2]
+    new_candidate = np.concatenate([new_candidate, candidate[:, 2:]], axis=-1)
+    meta["candidate"] = new_candidate.tolist()
+    return meta
+
+def merge_metas(metas):
+    # Filter out empty metas
+    metas = [meta for meta in metas if len(meta["candidate"]) > 0]
+    if len(metas) == 0:
+        return {"candidate": [], "subset": []}
+    metas = [{
+        "candidate": np.array(meta["candidate"]), 
+        "subset": np.array(meta["subset"])
+    } for meta in metas]
+    candidate, subset = metas[0]["candidate"], metas[0]["subset"]
+    for i in range(1, len(metas)):
+        num_keypoints = candidate.shape[0]
+        new_candidate = metas[i]["candidate"]
+        new_subset = metas[i]["subset"]
+        # Increment index
+        new_candidate[..., 3] += num_keypoints
+        # Select visibles and omit last two elements
+        # (num_keypoints, score)
+        visibles = new_subset != -1
+        visibles[:, -2:] = False
+        new_subset[visibles] += num_keypoints
+        # Add new elements
+        candidate = np.concatenate([candidate, new_candidate], axis=0)
+        subset = np.concatenate([subset, new_subset], axis=0)
+    meta = {"candidate": candidate.tolist(), "subset": subset.tolist()}
+    return meta
+
 # ====================
 #    Pose Rescaling
 # ====================
@@ -158,6 +193,8 @@ def get_joint_to_pos(meta):
     return joint_to_pos, joint_to_cand
 
 def rescale_pair(joint_to_pos, pair, new_length=None, static_joint_to_pos=None):
+    if pair[0] not in joint_to_pos or pair[1] not in joint_to_pos:
+        return -1
     point1, point2 = joint_to_pos[pair[0]], joint_to_pos[pair[1]]
     if new_length is not None:
         # Use static_joint_to_pos to preserve angles
@@ -177,27 +214,29 @@ def rescale_meta(ref_meta, meta):
     ref_joint_to_pos, _ = get_joint_to_pos(ref_meta)
     static_joint_to_pos, joint_to_cand = get_joint_to_pos(meta)
     joint_to_pos, joint_to_cand = get_joint_to_pos(meta)
-    ref_length, length = None, None
+
+    # Get the max joint length in ref
+    # Set one limb to have fixed length
+    # and everything is rescaled accordingly
+    ref_lengths = {i: rescale_pair(ref_joint_to_pos, CONNECTIONS[i]) for i in range(len(CONNECTIONS))}
+    pair = CONNECTIONS[max(ref_lengths, key=lambda i: ref_lengths[i])]
+    ref_length = rescale_pair(ref_joint_to_pos, pair)
+    length = rescale_pair(joint_to_pos, pair)
+    
     # Note that CONNECTIONS should be iterated through
     # using breadth first search for this to make sense
     for i, pair in enumerate(CONNECTIONS):
         get_pair_present = lambda pair, joint_to_pos: pair[0] in joint_to_pos and pair[1] in joint_to_pos
         if get_pair_present(pair, joint_to_pos):
             if get_pair_present(pair, ref_joint_to_pos):
-                if ref_length is None:
-                    # Set one limb to have fixed length
-                    # and everything is rescaled accordingly
-                    ref_length = rescale_pair(ref_joint_to_pos, pair)
-                    length = rescale_pair(joint_to_pos, pair)
-                else:
-                    # Rescale point2
-                    scale = rescale_pair(ref_joint_to_pos, pair) / ref_length
-                    new_length = length * scale
-                    new_point = rescale_pair(joint_to_pos, pair, new_length=new_length, static_joint_to_pos=static_joint_to_pos)
-                    candidate[joint_to_cand[pair[1]]][:2] = new_point
-                    # Update the joint positions in meta
-                    meta["candidate"] = candidate
-                    joint_to_pos, _ = get_joint_to_pos(meta)
+                # Rescale point2
+                scale = rescale_pair(ref_joint_to_pos, pair) / ref_length
+                new_length = length * scale
+                new_point = rescale_pair(joint_to_pos, pair, new_length=new_length, static_joint_to_pos=static_joint_to_pos)
+                candidate[joint_to_cand[pair[1]]][:2] = new_point
+                # Update the joint positions in meta
+                meta["candidate"] = candidate
+                joint_to_pos, _ = get_joint_to_pos(meta)
             else:
                 print("ref_meta must be superset of meta")
     meta["candidate"] = meta["candidate"].tolist()

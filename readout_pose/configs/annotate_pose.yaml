@@ -15,7 +15,8 @@
 
 read_root: data/raw/MSCOCO/images/val2017/*
 filter_file: annotations/MSCOCO-val2017_demo.json
-aggregation_ckpt: weights/readout_sdv1-5_pose_keypoint.pt
+aggregation_ckpt: weights/readout_sdv15_pose_keypoint.pt
+detector_ckpt: yolov8s
 save_root: data/pseudo_labels/MSCOCO/readout_pose_keypoint
 batch_size: 5
 res: 512

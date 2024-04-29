@@ -21,20 +21,34 @@ During inference, we predict the keypoint location by taking the argmax of the c
 We use the same architecture as the original RGB pose head, except we set `output_head_channels=18` and we remove the final tanh activation by setting `output_head_act=False`. For simplicity, we only train this head on a single timestep by setting `eval_mode=True` during training, which sets the inputs to be clean images at the cleanest timestep.
 
 ## Results
-We report the performance of the pose keypoint head on MSCOCO val2017. For all methods, we crop the input image to the ground-truth bounding box for each person and resize it to a fixed resolution. When computing the metric, we re-scale and re-center the keypoints according to this bounding box to the original image coordinates. We filter out all ground-truth annotations with no visible keypoints. We report the percentage of correct keypoints (PCK).
+We report the performance of the pose keypoint head on the unseen evaluation set MSCOCO val2017. For all methods, we crop the input image to the ground-truth bounding box for each person and resize it to a fixed resolution. When computing the metric, we re-scale and re-center the keypoints according to this bounding box to the original image coordinates. We filter out all ground-truth annotations with no visible keypoints. We report the percentage of correct keypoints (PCK).
 
-Our readout heads are trained on MSCOCO train2017 with a learning rate of 1e-3 and batch size of 8 for maximum 25k steps.
+Our readout heads are trained on MSCOCO train2017 with a learning rate of 1e-3 and batch size of 8. We report the performance of the readout head with `max_steps` equal to 5k or 100k, where the former setting benchmarks the performance when training for at most three hours. Our released weights correspond to the readout head with longer training.
 
 **Table 1. MSCOCO val2017**
-| Method | Input Resolution | PCK @ 0.05 | PCK @ 0.1 | PCK @ 0.2|
+| Method | Input Resolution | PCK @ 0.05 | PCK @ 0.1 | PCK @ 0.2 |
 |----------|----------|----------|----------|----------|
+| **Baselines** |
 | [OpenPose](https://github.com/lllyasviel/ControlNet/tree/main/annotator/openpose) [2] | 512x512 | 69.0 | 77.1 | 83.0 | 24.5 |
 | [ViTPose](https://github.com/JunkyByte/easy_ViTPose) [3] |  512x512 | 83.4 | 91.9 | 96.1 |
-| Readout - Pose Keypoint, SDv1-5 |  512x512 | 71.4 | 81.3 | 87.7 |
-| Readout - Pose Keypoint, SDXL |  1024x1024 | 62.7 | 75.4 | 85.1 |
+| **SDv1-5** |
+| RG (5k steps) | 512x512 | 68.1| 78.8 | 86.2 |
+| [RG (100k steps)](https://huggingface.co/g-luo/readout-guidance/resolve/main/readout_pose/readout_sdv15_pose_keypoint.pt?download=true) | 512x512 | 74.0 | 83.8 | 89.7 |
+| **SDXL** |
+| RG (5k steps) | 1024x1024 | 55.9 | 70.0 | 82.5 |
+| [RG (100k steps)](https://huggingface.co/g-luo/readout-guidance/resolve/main/readout_pose/readout_sdxl_pose_keypoint.pt?download=true) | 1024x1024 | 65.9 | 77.5 | 85.6 |
 
 ## Code
-You can also find the pre-trained weights of our pose keypoint heads on our [HuggingFace page](https://huggingface.co/g-luo/readout-guidance).
+## Setup
+To run the following code, make the following updates to the `readout` conda environment.
+```
+conda activate readout
+pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 --index-url https://download.pytorch.org/whl/cu117
+pip install ultralytics
+```
+
+#### Model Weights
+From our HuggingFace page, download the pre-trained weights of the [pose keypoint heads](https://huggingface.co/g-luo/readout-guidance/readout_pose) and move them to the path `readout-guidance/readout_pose/weights`.
 
 #### Raw Data
 We use the [MSCOCO](https://cocodataset.org/#download) train2017 and val2017 images and annotations. To automatically download the dataset run `./data/scripts/download_raw.sh`.
