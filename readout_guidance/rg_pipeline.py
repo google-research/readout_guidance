@@ -58,7 +58,7 @@ class ReadoutGuidance():
         return rg_helpers.collect_and_resize_feats(self.model, self.idxs, self.latent_dim)
 
     def has_edits(self):
-        return any(["control" in edit or "perceptual" in edit or "points" in edit for edit in self.edits])
+        return len(self.edits) > 0
     
 def diffusion_step(
         model,
