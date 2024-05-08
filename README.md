@@ -19,7 +19,10 @@ conda activate readout
 ```
 
 ## Readout Heads
-All model weights can be found on our [HuggingFace page](https://huggingface.co/g-luo/readout-guidance). Specifically, download the desired [readout heads](https://huggingface.co/g-luo/readout-guidance/tree/main/weights) and move them to the path `readout-guidance/weights`.
+All model weights can be found on our [HuggingFace page](https://huggingface.co/g-luo/readout-guidance/weights). To automatically download the weights run:
+```
+./download_weights.sh
+```
 
 | Readout Head Type| SDv1-5 | SDXL |
 |----------|----------|----------|

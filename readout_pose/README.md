@@ -48,10 +48,16 @@ pip install ultralytics
 ```
 
 #### Model Weights
-From our HuggingFace page, download the pre-trained weights of the [pose keypoint heads](https://huggingface.co/g-luo/readout-guidance/readout_pose) and move them to the path `readout-guidance/readout_pose/weights`.
+From our HuggingFace page, download the pre-trained weights of the [pose keypoint heads](https://huggingface.co/g-luo/readout-guidance/readout_pose). To automatically download the weights run:
+```
+./data/scripts/download_weights.sh
+```
 
 #### Raw Data
-We use the [MSCOCO](https://cocodataset.org/#download) train2017 and val2017 images and annotations. To automatically download the dataset run `./data/scripts/download_raw.sh`.
+We use the [MSCOCO](https://cocodataset.org/#download) train2017 and val2017 images and annotations. To automatically download the dataset run:
+```
+./data/scripts/download_raw.sh
+```
 
 #### Training Script
 ```
