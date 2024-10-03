@@ -19,7 +19,7 @@ conda activate readout
 ```
 
 ## Readout Heads
-All model weights can be found on our [HuggingFace page](https://huggingface.co/g-luo/readout-guidance/weights). To automatically download the weights run:
+All model weights can be found on our [HuggingFace page](https://huggingface.co/g-luo/readout-guidance/tree/main/weights). To automatically download the weights run:
 ```
 ./download_weights.sh
 ```
