@@ -58,7 +58,7 @@ To train your own readout heads, please check out `readout_training/README.md`.
 @inproceedings{luo2024readoutguidance,
     title={Readout Guidance: Learning Control from Diffusion Features},
     author={Grace Luo and Trevor Darrell and Oliver Wang and Dan B Goldman and Aleksander Holynski},
-    journal={CVPR},
+    booktitle={CVPR},
     year={2024}
 }
 ```
