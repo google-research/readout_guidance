@@ -243,7 +243,13 @@ def get_context_sdxl(
     )
     context = torch.cat([negative_prompt_embeds, prompt_embeds], dim=0)
     add_text_embeds = torch.cat([negative_pooled_prompt_embeds, pooled_prompt_embeds], dim=0)
-    add_time_ids = model._get_add_time_ids(original_size, crops_coords_top_left, target_size, dtype=prompt_embeds.dtype)
+    
+    if model.text_encoder_2 is None:
+        text_encoder_projection_dim = int(pooled_prompt_embeds.shape[-1])
+    else:
+        text_encoder_projection_dim = model.text_encoder_2.config.projection_dim
+    
+    add_time_ids = model._get_add_time_ids(original_size, crops_coords_top_left, target_size, dtype=prompt_embeds.dtype, text_encoder_projection_dim=text_encoder_projection_dim)
     add_time_ids = torch.cat([add_time_ids, add_time_ids], dim=0)
     add_time_ids = add_time_ids.repeat((batch_size, 1))
     context = context.to(device).to(dtype)
